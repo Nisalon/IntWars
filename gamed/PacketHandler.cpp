@@ -8,12 +8,12 @@ PacketHandler::PacketHandler(ENetHost *server, BlowFish *blowfish)
 	memset(_handlerTable,0,sizeof(_handlerTable));
 	registerHandler(&PacketHandler::handleKeyCheck,PKT_KeyCheck,CHL_HANDSHAKE);
 	registerHandler(&PacketHandler::handleLoadPing,PKT_C2S_Ping_Load_Info,CHL_C2S);
-	registerHandler(&PacketHandler::handleSpawn,PKT_C2S_CharLoaded,CHL_C2S); //check behaviour with multiple players, ATM game starting when 1st playe is ready(?) .ltsstar
+	registerHandler(&PacketHandler::handleSpawn,PKT_C2S_CharLoaded,CHL_C2S);
 	registerHandler(&PacketHandler::handleMap,PKT_C2S_ClientReady,CHL_LOADING_SCREEN);
 	registerHandler(&PacketHandler::handleSynch,PKT_C2S_SynchVersion,CHL_C2S);
 	registerHandler(&PacketHandler::handleGameNumber,PKT_C2S_GameNumberReq,CHL_C2S);
 	registerHandler(&PacketHandler::handleQueryStatus,PKT_C2S_QueryStatusReq,CHL_C2S);
-	registerHandler(&PacketHandler::handleInit,PKT_C2S_Loaded,CHL_C2S);
+	registerHandler(&PacketHandler::handleStartGame,PKT_C2S_StartGame,CHL_C2S);
 	registerHandler(&PacketHandler::handleNull,PKT_C2S_Exit,CHL_C2S);
 	registerHandler(&PacketHandler::handleView,PKT_C2S_ViewReq,CHL_C2S);
 	registerHandler(&PacketHandler::handleNull,PKT_C2S_Click,CHL_C2S);
@@ -25,7 +25,7 @@ PacketHandler::PacketHandler(ENetHost *server, BlowFish *blowfish)
 
 PacketHandler::~PacketHandler()
 {
-	memset(_handlerTable,0,sizeof(_handlerTable)); //i prefer cleaning everything
+	
 }
 
 void PacketHandler::registerHandler(bool (PacketHandler::*handler)(HANDLE_ARGS), PacketCmd pktcmd,Channel c)
@@ -54,9 +54,9 @@ void PacketHandler::printLine(uint8 *buf, uint32 len)
 
 bool PacketHandler::sendPacket(ENetPeer *peer, uint8 *data, uint32 length, uint8 channelNo, uint32 flag)
 {
-	PDEBUG_LOG_LINE(Log::getMainInstance()," Sending packet:\n");
-	if(length < 300)
-		printPacket(data, length);
+	//PDEBUG_LOG_LINE(Log::getMainInstance()," Sending packet:\n");
+	//if(length < 300)
+	//	printPacket(data, length);
 
 	if(length >= 8)
 		_blowfish->Encrypt(data, length-(length%8)); //Encrypt everything minus the last bytes that overflow the 8 byte boundary
@@ -72,8 +72,8 @@ bool PacketHandler::sendPacket(ENetPeer *peer, uint8 *data, uint32 length, uint8
 
 bool PacketHandler::broadcastPacket(uint8 *data, uint32 length, uint8 channelNo, uint32 flag)
 {
-	PDEBUG_LOG_LINE(Log::getMainInstance()," Broadcast packet:\n");
-	printPacket(data, length);
+	//PDEBUG_LOG_LINE(Log::getMainInstance()," Broadcast packet:\n");
+	//printPacket(data, length);
 
 	if(length >= 8)
 		_blowfish->Encrypt(data, length-(length%8)); //Encrypt everything minus the last bytes that overflow the 8 byte boundary
@@ -102,6 +102,7 @@ bool PacketHandler::handlePacket(ENetPeer *peer, ENetPacket *packet, uint8 chann
 	else
 	{
 		PDEBUG_LOG_LINE(Log::getMainInstance(),"Unknown packet: CMD %X(%i) CHANNEL %X(%i)\n", header->cmd, header->cmd,channelID,channelID);
+		printPacket(packet->data, packet->dataLength);
 	}
 	return false;	
 }

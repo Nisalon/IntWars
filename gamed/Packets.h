@@ -11,16 +11,18 @@
 #pragma pack(push,1)
 #endif
 
+//@@@@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@@@@//
+//The netId is a uint16 id and then uint16 flags, the flags are yet to be fully understood
 typedef struct _PacketHeader
 {
 	_PacketHeader()
 	{
-		type = 0;
-		unk1 = 0;
+		netId = flags = 0;
 	}
+
 	PacketCmd cmd;
-	uint8 type;
-	uint16 unk1;	//?
+	uint16 netId;
+	uint16 flags;
 } PacketHeader;
 
 typedef struct _SynchBlock
@@ -28,42 +30,48 @@ typedef struct _SynchBlock
 	_SynchBlock()
 	{
 		userId = 0xFFFFFFFFFFFFFFFF;
-		someId = 0;
-		unk1 = unk2 = 0;
+		netId = 0x1E;
+		teamId = 0x64;
+		unk2 = 0;
 		flag = 0; //1 for bot?
 		memset(data1, 0, 64);
 		memset(data2, 0, 64);
-		unk3 = 0xFFFFFFFF;
+		unk3 = 0x19;
 	}
 
 	uint64 userId;
-	uint16 someId;
+	uint16 netId;
 	uint32 skill1;
 	uint32 skill2;
 	uint8 flag;
-	uint32 unk1;     //Often 0x64
+	uint32 teamId;
 	uint8 data1[64];
 	uint8 data2[64];
-	uint32 unk2;     //Low numbers
+	uint32 unk2;
 	uint32 unk3;
 } SynchBlock;
+
+struct ClientReady
+{
+	uint32 cmd;
+	uint32 playerId;
+	uint32 teamId;
+};
 
 typedef struct _SynchVersionAns
 {
 	_SynchVersionAns()
 	{
-		cmd = PKT_S2C_SynchVersion;
-		unk1 = 0;
+		header.cmd = PKT_S2C_SynchVersion;
 		ok = ok2 = 1;
-		memcpy(version, "Version 1.0.0.136 [PUBLIC]", 27);
+		memcpy(version, "Version 1.0.0.141 [PUBLIC]", 27);
 		memcpy(gameMode, "CLASSIC", 8);
 		memset(zero, 0, 2232);
 		end1 = 0xE2E0;
 		end2 = 0xA0;
 	}
 
-	uint8 cmd;
-	uint32 unk1;
+	PacketHeader header;
 	uint8 ok;
 	uint32 mapId;
 	SynchBlock players[12];
@@ -79,7 +87,6 @@ typedef struct _SynchVersionAns
 typedef struct _PingLoadInfo
 {
 	PacketHeader header;
-	uint8 unk0;
 	uint32 unk1;
 	uint64 userId;
 	float loaded;
@@ -98,12 +105,12 @@ typedef struct _LoadScreenInfo
 		memset(this, 0, sizeof(_LoadScreenInfo));
 
 		cmd = PKT_S2C_LoadScreenInfo;
-		unk1 = unk2 = 6;		
+		blueMax = redMax = 6;		
 	}
 
 	uint32 cmd;
-	uint32 unk1; //6 in both cases
-	uint32 unk2; //""
+	uint32 blueMax;
+	uint32 redMax;
 	uint32 unk3;
 	uint64 bluePlayerIds[6]; //Team 1, 6 players max
 	uint8 blueData[144];
@@ -117,7 +124,7 @@ typedef struct _LoadScreenPlayer
 {
 	static _LoadScreenPlayer* create(PacketCmd cmd, int8 *str, uint32 size)
 	{
-		//Buils packet buffer
+		//Builds packet buffer
 		uint32 totalSize = sizeof(_LoadScreenPlayer)+size+1;
 		uint8* buf = new uint8[totalSize];
 		memset(buf, 0, totalSize);
@@ -126,7 +133,7 @@ typedef struct _LoadScreenPlayer
 		_LoadScreenPlayer *packet = (_LoadScreenPlayer *)buf;
 		packet->cmd = cmd;
 		packet->length = size;
-		packet->unk1 = 0;
+		packet->unk2 = 0xA;
 		packet->skinId = 0;
 		memcpy(packet->getDescription(), str, packet->length);
 		return packet;
@@ -138,7 +145,7 @@ typedef struct _LoadScreenPlayer
 	}
 
 	uint32 cmd;
-	uint32 unk1;
+	uint32 unk2;
 	uint64 userId;
 	uint32 skinId;
 	uint32 length;
@@ -160,14 +167,14 @@ typedef struct _KeyCheck
 	_KeyCheck()
 	{
 		cmd = PKT_KeyCheck;
-		netId = 0;
+		playerNo = 0;
 		checkId = 0;
 
 	}
 
 	uint8 cmd;
 	uint8 partialKey[3];   //Bytes 1 to 3 from the blowfish key for that client
-	uint32 netId;
+	uint32 playerNo;
 	uint64 userId;         //uint8 testVar[8];   //User id + padding
 	uint64 checkId;        //uint8 checkVar[8];  //Encrypted testVar
 } KeyCheck;
@@ -278,21 +285,18 @@ typedef struct _QueryStatus
 	_QueryStatus()
 	{
 		header.cmd = PKT_S2C_QueryStatusAns;
-		ok = ENET_HOST_TO_NET_16(1);
+		ok = 1;
 	}
 	PacketHeader header;
-	uint16 ok;
+	uint8 ok;
 } QueryStatus;
 
-/* TODO*/
 typedef struct _SynchVersion
 {
 	PacketHeader header;
-	uint8 ok;
-	uint64 unk1;
-	uint8 version[27];
+	uint32 unk1;
 	uint32 unk2;
-	uint32 unk3;
+	uint8 version[50]; //Dunno how big and when usefull data begins
 } SynchVersion;
 
 typedef struct _WorldSendGameNumber
@@ -302,80 +306,55 @@ typedef struct _WorldSendGameNumber
 		header.cmd = PKT_World_SendGameNumber;
 		memset(data, 0, sizeof(data));
 		gameId = 0;
-		ok = 0;
 	}
 
 	PacketHeader header;
-	uint8 ok;
 	uint64 gameId;
 	uint8 data[0x80];
 } WorldSendGameNumber;
 
 typedef struct _ChatBoxMessage
 {
-	PacketHeader header;
+	uint32 unk;
 	ChatMessageType cmd;
 	uint32 msgLength;	
 } ChatBoxMessage;
 
-typedef struct _HeroSpawnPacket
+typedef struct _StatePacket
 {
-	static _HeroSpawnPacket* create(PacketCmd cmd, int8 *name, uint32 nameLen, int8 *heroType, uint32 heroLen)
+	_StatePacket(PacketCmd state)
 	{
+		header.cmd = state;
+	}
+	PacketHeader header;
+} StatePacket;
 
-		uint32 totalSize = sizeof(_HeroSpawnPacket)+232+1;
-		uint8* buf = new uint8[totalSize];
-		uint8 packet[] ={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0x50, 0x00, 0xba, 0x19, 0x00,\
-		0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x40, 0x18, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
-		0x49, 0x4d, 0x78, 0x48, 0x6f, 0x74, 0x00, 0xf7, 0x02, 0x5c, 0xcf, 0xa3, 0x02, 0xb8, 0x77, 0xff,\
-		0x02, 0xb5, 0xd0, 0x74, 0x00, 0x13, 0xd3, 0x74, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,\
-		0x00, 0x0c, 0xf8, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd0, 0x84, 0x76, 0x00, 0xff, 0xff, 0xff,\
-		0xff, 0xf0, 0xa7, 0x5b, 0x00, 0x01, 0x00, 0x00, 0x00, 0xfe, 0xff, 0xff, 0xff, 0x4c, 0xf8, 0x18,\
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x51, 0xf8, 0x18, 0x00, 0x02, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00,\
-		0x00, 0x88, 0x54, 0x78, 0x00, 0x0c, 0xf8, 0x18, 0x00, 0xa0, 0x77, 0xf2, 0x02, 0x20, 0xa3, 0xb6,\
-		0x17, 0x9b, 0x35, 0x67, 0x00, 0xff, 0xff, 0xff, 0xff, 0x07, 0x00, 0x00, 0x00, 0x4c, 0xf8, 0x18,\
-		0x00, 0x24, 0xf9, 0x18, 0x00, 0x28, 0xf9, 0x18, 0x00, 0x66, 0x00, 0x00, 0x00, 0x3c, 0xe4, 0xa3,\
-		0x41, 0x68, 0x72, 0x69, 0x00, 0x3c, 0xe4, 0xa3, 0x02, 0xf8, 0x77, 0xff, 0x02, 0x00, 0x00, 0x00,\
-		0x00, 0x8e, 0x31, 0x61, 0x00, 0x07, 0x00, 0x00, 0x00, 0x4c, 0xf8, 0x18, 0x00, 0x03, 0x00, 0x00,\
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x14, 0x8b, 0x19, 0x00, 0x00, 0x40, 0x00, 0x00,\
-		0x00, 0x00, 0x00, 0x17, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x17, 0x00, 0x02, 0x00, 0x00, 0x00,\
-		0x00, 0x17, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00};
-		memset(buf, 0, totalSize);
-		memcpy(buf+4, packet, totalSize);
+typedef struct _HeroSpawn
+{
+	_HeroSpawn()
+	{
+		header.cmd = PKT_S2C_HeroSpawn;
+		unk1 = 0;
+		memset(&name, 0, 128+40); //Set name + type to zero
 
-		_HeroSpawnPacket *type = (_HeroSpawnPacket *)buf;
-		type->header.cmd = cmd;
-		type->header.type = 0x06;
-		type->header.unk1 = 0x6607;
-		
-		memcpy(type->playerName, name, nameLen+1);
-		memcpy(type->heroType, heroType, heroLen+1);
-						
-		return type;
+		x = 130880;
+		y = 502;
 	}
 
 	PacketHeader header;
-	uint8 top[28];
-	uint8 playerName[16];
-	uint8 middle[112];
-	uint8 heroType[11];
-	uint8 bottom[61];
-
-	uint32 getPacketLength()
-	{
-		return 232;
-	}
-	
-} HeroSpawnPacket;
+	uint32 netId; //Also found something about locking flag//Perhaps first 4 bits is type and rest is netId?? or something?? //Linked for mastery's (first uitn32, and also animation (looks like it) and possible more) often looks like XX 00 00 40 where XX is around 10-30
+	uint32 gameId; //1-number of players
+	uint32 x;       //Some coordinates, no idea how they work yet
+	uint32 y;
+	uint16 unk1;
+	uint8 name[128];
+	uint8 type[40];
+} HeroSpawn;
 
 typedef struct _SkillUpPacket
 {
-	
 	PacketHeader header;
-	uint8 unk;
 	uint8 skill;
-	
-	
 } SkillUpPacket;
 
 typedef struct _SkillUpResponse
@@ -383,16 +362,13 @@ typedef struct _SkillUpResponse
 	_SkillUpResponse()
 	{
 		header.cmd = PKT_S2C_SkillUp;
-		header.type = 0x19;
-		unk = 0x40;
 		level = 0x0000;
 	}
 	PacketHeader header;
-	uint8 unk;
 	uint8 skill;
 	uint16 level; //?
-	
-	
+
+
 } SkillUpResponse;
 
 #if defined( __GNUC__ )

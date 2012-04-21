@@ -51,6 +51,7 @@ void NetworkListener::netLoop()
 				event.peer->data = new ClientInfo();
 				peerInfo(event.peer)->setName("HeroWars");
 				peerInfo(event.peer)->setType("Teemo");
+				peerInfo(event.peer)->netId = 0xAAAA;
 
 			break;
 
@@ -68,7 +69,7 @@ void NetworkListener::netLoop()
 			Log::getMainInstance()->writeLine("Peer disconnected.\n");
 
 			/* Cleanup */
-			delete event.peer->data;
+			delete (ClientInfo*)event.peer->data;
 		break;
 		}
 	}

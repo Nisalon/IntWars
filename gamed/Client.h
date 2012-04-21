@@ -42,6 +42,7 @@ typedef struct _ClientInfo
 	bool keyChecked;
 	uint64 userId;
 
+	uint32 netId;
 	uint32 nameLen;
 	uint32 typeLen;
 	int8 *name;
