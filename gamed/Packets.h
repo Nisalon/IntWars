@@ -329,6 +329,21 @@ typedef struct _StatePacket
 	PacketHeader header;
 } StatePacket;
 
+struct FogUpdate2
+{
+	FogUpdate2()
+	{
+		header.cmd = (PacketCmd)0xC5;
+		header.netId = 0x19;
+		header.flags = 0x4000;
+	}
+	PacketHeader header;
+	float x;
+	float y;
+	uint32 radius;
+	uint8 unk1;
+};
+
 typedef struct _HeroSpawn
 {
 	_HeroSpawn()

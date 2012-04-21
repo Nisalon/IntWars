@@ -50,8 +50,8 @@ void NetworkListener::netLoop()
 
 				event.peer->data = new ClientInfo();
 				peerInfo(event.peer)->setName("HeroWars");
-				peerInfo(event.peer)->setType("Teemo");
-				peerInfo(event.peer)->netId = 0xAAAA;
+				peerInfo(event.peer)->setType("Hecarim");
+				peerInfo(event.peer)->netId = 0x19;
 
 			break;
 
