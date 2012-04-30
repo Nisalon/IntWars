@@ -292,9 +292,7 @@ struct MovementAns
 	{
 		if(index >= vectorNo)
 			return NULL;
-		MovementVector *addyFirst = &vectors;
-		MovementVector *pointed = &addyFirst[index];
-		return pointed; //A very fancy way of getting the struct from the dynamic buffer
+		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
 	}
 
 	static MovementAns *create(uint32 vectorNo)
@@ -313,10 +311,7 @@ struct MovementAns
 
 	static uint32 size(uint32 vectorNo)
 	{
-		uint32 s = sizeof(MovementAns);
-		uint32 v = sizeof(MovementVector);
-		s += ((vectorNo-1)*v);
-		return s;
+		return sizeof(MovementAns)+((vectorNo-1)*sizeof(MovementVector));
 	}
 
 	uint32 size()
