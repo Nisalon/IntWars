@@ -13,18 +13,28 @@
 
 //@@@@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@@@@//
 //The netId is a uint16 id and then uint16 flags, the flags are yet to be fully understood
-typedef struct _PacketHeader
+struct PacketHeader
 {
-	_PacketHeader()
+	PacketHeader()
 	{
-		netId = flags = 0;
+		netId = 0;
 	}
 
 	PacketCmd cmd;
-	uint16 netId;
-	uint16 flags;
-} PacketHeader;
+	uint32 netId;
+};
 
+struct GameHeader
+{
+	GameHeader()
+	{
+		netId = ticks = 0;
+	}
+
+	GameCmd cmd;
+	uint32 netId;
+	uint32 ticks;
+};
 typedef struct _SynchBlock
 {
 	_SynchBlock()
@@ -231,6 +241,90 @@ typedef struct _ViewReq
 	uint8 requestNo;
 } ViewReq;
 
+struct MovementVector
+{
+	uint16 x;
+	uint16 y;
+};
+
+struct MovementReq
+{
+	PacketHeader header;
+	uint8 count;
+	float x;
+	float y;
+	float z;
+	uint32 zero;
+	uint16 unk;
+	uint16 vectorNo;
+	uint32 netId;
+	MovementVector vectors;
+
+	MovementVector *getVector(uint32 index)
+	{
+		if(index >= vectorNo)
+			return NULL;
+
+		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
+	}
+
+	uint32 size()
+	{
+		return sizeof(MovementReq)+((vectorNo-1)*sizeof(MovementVector));
+	}
+};
+
+struct MovementAns
+{
+	MovementAns()
+	{
+		header.cmd = PKT_S2C_MoveAns;
+	}
+
+	GameHeader header;
+	uint16 ok;
+	uint16 unk;
+	uint16 vectorNo;
+	uint32 netId;
+	MovementVector vectors;
+
+	MovementVector *getVector(uint32 index)
+	{
+		if(index >= vectorNo)
+			return NULL;
+		MovementVector *addyFirst = &vectors;
+		MovementVector *pointed = &addyFirst[index];
+		return pointed; //A very fancy way of getting the struct from the dynamic buffer
+	}
+
+	static MovementAns *create(uint32 vectorNo)
+	{
+		MovementAns *packet = (MovementAns*)new uint8[size(vectorNo)];
+		memset(packet, 0, size(vectorNo));
+		packet->header.cmd = PKT_S2C_MoveAns;
+		packet->vectorNo = vectorNo;
+		return packet;
+	}
+
+	static void destroy(MovementAns *packet)
+	{
+		delete [](uint8*)packet;
+	}
+
+	static uint32 size(uint32 vectorNo)
+	{
+		uint32 s = sizeof(MovementAns);
+		uint32 v = sizeof(MovementVector);
+		s += ((vectorNo-1)*v);
+		return s;
+	}
+
+	uint32 size()
+	{
+		return size(vectorNo);
+	}
+};
+
 typedef struct _MoveReq
 {
 	uint8 cmd;
@@ -334,8 +428,7 @@ struct FogUpdate2
 	FogUpdate2()
 	{
 		header.cmd = (PacketCmd)0xC5;
-		header.netId = 0x19;
-		header.flags = 0x4000;
+		header.netId = 0x40000019;
 	}
 	PacketHeader header;
 	float x;

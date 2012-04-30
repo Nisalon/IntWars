@@ -13,6 +13,11 @@ typedef unsigned int uint32;
 typedef unsigned long long uint64; 
 
 #define PKT_MAX = 0x100
+enum GameCmd : uint8
+{
+	PKT_S2C_MoveAns = 0x67,
+};
+
 enum PacketCmd : uint8
 {
 	PKT_KeyCheck = 0x00, //Not a real packet

@@ -3,15 +3,16 @@
 
 #include "common.h"
 
-typedef struct _ClientInfo
+struct ClientInfo
 {
-	_ClientInfo()
+	ClientInfo()
 	{
 		keyChecked = false;
 		name = type = NULL;
+		ticks = 0;
 	}
 
-	~_ClientInfo()
+	~ClientInfo()
 	{
 		if(name != NULL)
 			delete[] name;
@@ -39,16 +40,21 @@ typedef struct _ClientInfo
 		memcpy(this->type, type, typeLen+1);
 	}
 
+	uint32 getTicks()
+	{
+		ticks++;
+		return ticks;
+	}
 	bool keyChecked;
 	uint64 userId;
-
+	uint32 ticks;
 	uint32 netId;
 	uint32 nameLen;
 	uint32 typeLen;
 	int8 *name;
 	int8 *type;
 
-} ClientInfo;
+};
 #define peerInfo(p) ((ClientInfo*)p->data)
 
 #endif
