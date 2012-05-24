@@ -61,6 +61,9 @@ ipch
 # Subversion data folders
 .svn/
 
+#Custom
+LoLClient_0.0.0.118
+
 # CMake temporary files
 CMakeFiles
 CMakeCache.txt
