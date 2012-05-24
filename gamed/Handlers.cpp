@@ -136,25 +136,46 @@ bool PacketHandler::handleView(ENetPeer *peer, ENetPacket *packet)
 
 bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 {
-	MovementReq *request = reinterpret_cast<MovementReq*>(packet->data);
+	bool isDelta = (packet->dataLength%2);
 
-	Log::getMainInstance()->writeLine("Move to: x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->x, request->y, request->z, request->unk, request->vectorNo);
-	for(int i = 0; i < request->vectorNo; i++)
-		printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
-
-	MovementAns *answer = MovementAns::create(request->vectorNo);
-	answer->header.ticks = peerInfo(peer)->getTicks();
-	answer->ok = 1;
-	answer->vectorNo = request->vectorNo;
-	answer->netId = peerInfo(peer)->netId;
-	for(int i = 0; i < request->vectorNo; i++)
+	if(isDelta)
 	{
-		answer->getVector(i)->x = request->getVector(i)->x;
-		answer->getVector(i)->y = request->getVector(i)->y;
+		MovementReqDelta *request = reinterpret_cast<MovementReqDelta*>(packet->data);
+		Log::getMainInstance()->writeLine("Move to(delta): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->data.x, request->data.y, request->data.z, request->data.unk, request->data.vectorNo);
+		for(int i = 0; i < request->data.vectorNo; i++)
+			printf("     Vector %i, x: %i y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
+
+		MovementAnsDelta *answer = MovementAnsDelta::create(request->data.vectorNo);
+		answer->header.ticks = peerInfo(peer)->getTicks();
+		answer->ok = 1;
+		answer->vectorNo = request->data.vectorNo;
+		answer->netId = peerInfo(peer)->netId;
+		for(int i = 0; i < request->data.vectorNo; i++)
+		{
+			answer->getVector(i)->x = request->getVector(i)->x;
+			answer->getVector(i)->y = request->getVector(i)->y;
+		}
+		return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
 	}
-	//Log::getMainInstance()->writeLine("Move to: x(left->right):%f, y(height):%f, z(bot->top): %f\n", request->x1, request->y1, request->z1);
-	return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
-	return true;
+	else
+	{
+		MovementReq *request = reinterpret_cast<MovementReq*>(packet->data);
+		Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->data.x, request->data.y, request->data.z, request->data.unk, request->data.vectorNo);
+		for(int i = 0; i < request->data.vectorNo; i++)
+			printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
+
+		MovementAns *answer = MovementAns::create(request->data.vectorNo);
+		answer->header.ticks = peerInfo(peer)->getTicks();
+		answer->ok = 1;
+		answer->vectorNo = request->data.vectorNo;
+		answer->netId = peerInfo(peer)->netId;
+		for(int i = 0; i < request->data.vectorNo; i++)
+		{
+			answer->getVector(i)->x = request->getVector(i)->x;
+			answer->getVector(i)->y = request->getVector(i)->y;
+		}
+		return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
+	}
 }
 
 bool PacketHandler::handleLoadPing(ENetPeer *peer, ENetPacket *packet)

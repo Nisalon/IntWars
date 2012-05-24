@@ -11,8 +11,6 @@
 #pragma pack(push,1)
 #endif
 
-//@@@@@@@@@@@@@ IMPORTANT @@@@@@@@@@@@@@@//
-//The netId is a uint16 id and then uint16 flags, the flags are yet to be fully understood
 struct PacketHeader
 {
 	PacketHeader()
@@ -247,9 +245,8 @@ struct MovementVector
 	uint16 y;
 };
 
-struct MovementReq
+struct MovementReqData
 {
-	PacketHeader header;
 	uint8 count;
 	float x;
 	float y;
@@ -258,11 +255,22 @@ struct MovementReq
 	uint16 unk;
 	uint16 vectorNo;
 	uint32 netId;
+};
+
+struct MovementReqDelta
+{
+	PacketHeader header;
+	MovementReqData data;
+	uint8 delta;
 	MovementVector vectors;
 
+	MovementReqDelta()
+	{
+		delta = 0;
+	}
 	MovementVector *getVector(uint32 index)
 	{
-		if(index >= vectorNo)
+		if(index >= data.vectorNo)
 			return NULL;
 
 		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
@@ -270,7 +278,74 @@ struct MovementReq
 
 	uint32 size()
 	{
-		return sizeof(MovementReq)+((vectorNo-1)*sizeof(MovementVector));
+		return sizeof(MovementReqDelta)+((data.vectorNo-1)*sizeof(MovementVector));
+	}
+};
+
+struct MovementAnsDelta
+{
+	MovementAnsDelta()
+	{
+		header.cmd = PKT_S2C_MoveAns;
+	}
+
+	GameHeader header;
+	uint16 ok;
+	uint16 unk;
+	uint16 vectorNo;
+	uint32 netId;
+	uint8 delta;
+	MovementVector vectors;
+
+	MovementVector *getVector(uint32 index)
+	{
+		if(index >= vectorNo)
+			return NULL;
+		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
+	}
+
+	static MovementAnsDelta *create(uint32 vectorNo)
+	{
+		MovementAnsDelta *packet = (MovementAnsDelta*)new uint8[size(vectorNo)];
+		memset(packet, 0, size(vectorNo));
+		packet->header.cmd = PKT_S2C_MoveAns;
+		packet->vectorNo = vectorNo;
+		return packet;
+	}
+
+	static void destroy(MovementAnsDelta *packet)
+	{
+		delete [](uint8*)packet;
+	}
+
+	static uint32 size(uint32 vectorNo)
+	{
+		return sizeof(MovementAnsDelta)+((vectorNo-1)*sizeof(MovementVector));
+	}
+
+	uint32 size()
+	{
+		return size(vectorNo);
+	}
+};
+
+struct MovementReq
+{
+	PacketHeader header;
+	MovementReqData data;
+	MovementVector vectors;
+
+	MovementVector *getVector(uint32 index)
+	{
+		if(index >= data.vectorNo)
+			return NULL;
+
+		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
+	}
+
+	uint32 size()
+	{
+		return sizeof(MovementReq)+((data.vectorNo-1)*sizeof(MovementVector));
 	}
 };
 
@@ -319,25 +394,6 @@ struct MovementAns
 		return size(vectorNo);
 	}
 };
-
-typedef struct _MoveReq
-{
-	uint8 cmd;
-	uint8 sub_cmd1;
-	uint16 sub_cmd1Pad; //padding
-	uint16 sub_cmd1Def; // defintion of cmd
-	float x1; //position where is clicked on
-	float y1; //-||-
-	float z1; //-||-
-	uint32 pad2; //padding
-	uint32 unk1; //Unk
-	uint8 sub_cmd2;
-	uint16 sub_cmd2Pad; //padding
-	uint16 sub_cmd2Def; // definition of cmd
-	short x2; // I don't get that shit
-	short y2; // -||-
-	short z2; // -||-
-} MoveReq;
 
 typedef struct _ViewAns
 {
@@ -422,7 +478,7 @@ struct FogUpdate2
 {
 	FogUpdate2()
 	{
-		header.cmd = (PacketCmd)0xC5;
+		header.cmd = PKT_S2C_FogUpdate2;
 		header.netId = 0x40000019;
 	}
 	PacketHeader header;
