@@ -76,7 +76,18 @@ enum Channel : uint8
 
 enum Spell : uint32
 {
+	SPL_Revive = 0x05C8B3A5,
+	SPL_Smite = 0x065E8695,
 	SPL_Exhaust = 0x08A8BAE4,
+	SPL_Barrier = 0x0CCFB982,
+	SPL_Teleport = 0x004F1364,
+	SPL_Ghost = 0x064ACC95,
+	SPL_Heal = 0x0364AF1C,
 	SPL_Cleanse = 0x064D2094,
+	SPL_Clarity = 0x03657421,
+	SPL_Ignite = 0x06364F24,
+	SPL_Promote = 0x0410FF72,
+	SPL_Clair = 0x09896765,
+	SPL_Flash = 0x06496EA8, 
 };
 #endif
