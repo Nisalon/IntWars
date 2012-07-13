@@ -533,6 +533,21 @@ typedef struct _SkillUpResponse
 
 } SkillUpResponse;
 
+typedef struct _EmotionPacket
+{
+	PacketHeader header;
+	uint8 id;
+} EmotionPacket;
+
+typedef struct _EmotionResponse
+{
+	_EmotionResponse()
+	{
+		header.cmd = PKT_S2C_Emotion;
+	}
+	PacketHeader header;
+	uint8 id;
+} EmotionResponse;
 #if defined( __GNUC__ )
 #pragma pack()
 #else

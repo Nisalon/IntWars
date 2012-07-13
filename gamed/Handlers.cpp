@@ -188,6 +188,12 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 	}
 }
 
+bool PacketHandler::affirmMove(HANDLE_ARGS)
+{
+	//resend last move packet if this is _not_ received
+	return true;
+}
+
 bool PacketHandler::handleLoadPing(ENetPeer *peer, ENetPacket *packet)
 {
 	PingLoadInfo *loadInfo = reinterpret_cast<PingLoadInfo*>(packet->data);
@@ -249,5 +255,35 @@ bool PacketHandler::handleSkillUp(HANDLE_ARGS) {
 	sendPacket(peer, reinterpret_cast<uint8*>(&test), sizeof(FogUpdate2), 3);
 	
 	return sendPacket(peer, reinterpret_cast<uint8*>(&skillUpResponse),sizeof(skillUpResponse),CHL_GAMEPLAY);
+
+}
+
+bool PacketHandler::handleEmotion(HANDLE_ARGS) {
+	EmotionPacket* emotion = reinterpret_cast<EmotionPacket*>(packet->data);
+	//for later use -> tracking, etc.
+	switch(emotion->id)
+	{
+	case 0:
+		//dance
+		Log::getMainInstance()->writeLine("dance");
+		break;
+	case 1:
+		//taunt
+		Log::getMainInstance()->writeLine("taunt");
+		break;
+	case 2:
+		//laugh
+		Log::getMainInstance()->writeLine("laugh");
+		break;
+	case 3:
+		//joke
+		Log::getMainInstance()->writeLine("joke");
+		break;
+	}
+	EmotionResponse response;
+	response.header.netId = emotion->header.netId;
+	response.id = emotion->id;
+
+	return sendPacket(peer, reinterpret_cast<uint8*>(&response), sizeof(response),3);
 
 }

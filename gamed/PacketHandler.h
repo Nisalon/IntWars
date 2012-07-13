@@ -38,9 +38,11 @@ class PacketHandler
 		bool handleStartGame(HANDLE_ARGS);
 		bool handleView(HANDLE_ARGS);
 		bool handleMove(HANDLE_ARGS);
+		bool affirmMove(HANDLE_ARGS);
 		bool handleAttentionPing(HANDLE_ARGS);
 		bool handleChatBoxMessage(HANDLE_ARGS);
 		bool handleSkillUp(HANDLE_ARGS);
+		bool handleEmotion(HANDLE_ARGS);
 
 		//Tools
 		void printPacket(uint8 *buf, uint32 len);
