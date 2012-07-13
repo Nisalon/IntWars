@@ -10,6 +10,16 @@ bool PacketHandler::handleKeyCheck(ENetPeer *peer, ENetPacket *packet)
 	KeyCheck *keyCheck = (KeyCheck*)packet->data;
 	uint64 userId = _blowfish->Decrypt(keyCheck->checkId);
 
+/*
+	uint64 enc = _blowfish->Encrypt(keyCheck->userId);
+	char buffer[255];
+	unsigned char *p = (unsigned char*)&enc;
+	for(int i = 0; i < 8; i++)
+	{
+		sprintf(&buffer[i*3], "%02X ", p[i]);
+	}
+	PDEBUG_LOG_LINE(Log::getMainInstance()," Enc id: %s\n", buffer);*/
+	
 	if(userId == keyCheck->userId)
 	{
 		PDEBUG_LOG_LINE(Log::getMainInstance()," User got the same key as i do, go on!\n");

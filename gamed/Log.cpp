@@ -29,7 +29,7 @@ void Log::setOutputFile(const char* path)
 void Log::writeDate()
 {
 	GetSystemTime(&m_time);	
-		_snprintf_s(m_buffer,LOG_BUFFER_SIZE,"[%d/%d/%d %d:%d:%d:%d]",m_time.wDay,
+		_snprintf_s(m_buffer,LOG_BUFFER_SIZE,"[%02d/%02d/%02d %02d:%02d:%02d:%03d]",m_time.wDay,
 			m_time.wMonth,
 			m_time.wYear,
 			m_time.wHour,

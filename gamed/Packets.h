@@ -177,14 +177,17 @@ typedef struct _KeyCheck
 		cmd = PKT_KeyCheck;
 		playerNo = 0;
 		checkId = 0;
+		trash = trash2 = 0;
 
 	}
 
 	uint8 cmd;
 	uint8 partialKey[3];   //Bytes 1 to 3 from the blowfish key for that client
 	uint32 playerNo;
-	uint64 userId;         //uint8 testVar[8];   //User id + padding
+	uint64 userId;         //uint8 testVar[8];   //User id
+	uint32 trash;
 	uint64 checkId;        //uint8 checkVar[8];  //Encrypted testVar
+	uint32 trash2;
 } KeyCheck;
 
 typedef struct _AttentionPing

@@ -21,7 +21,7 @@ enum GameCmd : uint8
 //Currently attuned to PBE 1.0.0.140
 enum PacketCmd : uint8
 {
-	PKT_KeyCheck = 0x00, //Not a real packet
+	PKT_KeyCheck			= 0x00, //Not a real packet
 	PKT_ChatBoxMessage              = 0x00,
 	PKT_S2C_EndSpawn                = 0x12,
 	PKT_C2S_QueryStatusReq          = 0x17,
@@ -44,18 +44,18 @@ enum PacketCmd : uint8
 	PKT_S2C_LoadName                = 0x66,
 	PKT_S2C_LoadScreenInfo          = 0x67,
 	PKT_C2S_MoveReq                 = 0x78,
-	PKT_S2C_FogUpdate               = 0x7A,
+	PKT_S2C_FogUpdate               = 0x7D,
 	PKT_C2S_ReqBuyItem              = 0x88,
 	PKT_S2C_QueryStatusAns          = 0x8F,
 	PKT_C2S_Exit                    = 0x96,
 	PKT_World_SendGameNumber        = 0x9A,
 	PKT_S2C_Ping_Load_Info          = 0x9F,
 	PKT_C2S_GameNumberReq           = 0xA6,
-	PKT_C2S_Click                   = 0xB9,
-	PKT_C2S_SynchVersion            = 0xC7,
-	PKT_C2S_CharLoaded              = 0xC8,
-	PKT_S2C_FogUpdate2		= 0xC4,
-	PKT_S2C_CharStats		= 0xCE,
+	PKT_C2S_Click                   = 0xBB,
+	PKT_S2C_FogUpdate2		= 0xC6,
+	PKT_C2S_SynchVersion            = 0xC9,
+	PKT_C2S_CharLoaded              = 0xCA,
+	PKT_S2C_CharStats		= 0xD0,
 	PKT_Batch                       = 0xFF,
 	//It has a 3 byte pre header and then just concated the packets, where it is FF COUNT FIRSTPACKETSIZE (all bytes)
 	//But beware!! The packet headers of the packets in the batch are shortened by 2 bytes!!!!
