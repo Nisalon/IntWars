@@ -69,7 +69,7 @@ bool PacketHandler::handleMap(ENetPeer *peer, ENetPacket *packet)
 
 	LoadScreenPlayer *playerHero = LoadScreenPlayer::create(PKT_S2C_LoadHero,  peerInfo(peer)->type, peerInfo(peer)->typeLen);
 	playerHero->userId = peerInfo(peer)->userId;
-	playerHero->skinId = 2;
+	playerHero->skinId = peerInfo(peer)->skinNo;
 
 	//Builds team info
 	LoadScreenInfo screenInfo;
@@ -112,6 +112,14 @@ bool PacketHandler::handleStartGame(HANDLE_ARGS)
 {
 	StatePacket start(PKT_S2C_StartGame);
 	sendPacket(peer, reinterpret_cast<uint8*>(&start), sizeof(StatePacket), CHL_S2C);
+	FogUpdate2 test;
+	test.x = 0;
+	test.y = 0;
+	test.radius = 1;
+	test.unk1 = 2;
+	//uint8 p[] = {0xC5, 0x19, 0x00, 0x00, 0x40, 0x00, 0x00, 0x50};
+	//sendPacket(peer, reinterpret_cast<uint8*>(p), sizeof(p), 3);
+	sendPacket(peer, reinterpret_cast<uint8*>(&test), sizeof(FogUpdate2), 3);
 	return true;
 }
 
@@ -146,46 +154,22 @@ bool PacketHandler::handleView(ENetPeer *peer, ENetPacket *packet)
 
 bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 {
-	bool isDelta = (packet->dataLength%2);
+	MovementReq *request = reinterpret_cast<MovementReq*>(packet->data);
+	Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->x, request->y, request->z, request->count, request->vectorNo);
+	for(int i = 0; i < request->vectorNo; i++)
+		printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
 
-	if(isDelta)
+	MovementAns *answer = MovementAns::create(request->vectorNo, request->hasDelta());
+	answer->header.ticks = peerInfo(peer)->getTicks();
+	answer->ok = 1;
+	answer->vectorNo = request->vectorNo;
+	answer->netId = peerInfo(peer)->netId;
+	for(int i = 0; i < request->vectorNo; i++)
 	{
-		MovementReqDelta *request = reinterpret_cast<MovementReqDelta*>(packet->data);
-		Log::getMainInstance()->writeLine("Move to(delta): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->data.x, request->data.y, request->data.z, request->data.unk, request->data.vectorNo);
-		for(int i = 0; i < request->data.vectorNo; i++)
-			printf("     Vector %i, x: %i y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
-
-		MovementAnsDelta *answer = MovementAnsDelta::create(request->data.vectorNo);
-		answer->header.ticks = peerInfo(peer)->getTicks();
-		answer->ok = 1;
-		answer->vectorNo = request->data.vectorNo;
-		answer->netId = peerInfo(peer)->netId;
-		for(int i = 0; i < request->data.vectorNo; i++)
-		{
-			answer->getVector(i)->x = request->getVector(i)->x;
-			answer->getVector(i)->y = request->getVector(i)->y;
-		}
-		return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
+		answer->getVector(i)->x = request->getVector(i)->x;
+		answer->getVector(i)->y = request->getVector(i)->y;
 	}
-	else
-	{
-		MovementReq *request = reinterpret_cast<MovementReq*>(packet->data);
-		Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->data.x, request->data.y, request->data.z, request->data.unk, request->data.vectorNo);
-		for(int i = 0; i < request->data.vectorNo; i++)
-			printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
-
-		MovementAns *answer = MovementAns::create(request->data.vectorNo);
-		answer->header.ticks = peerInfo(peer)->getTicks();
-		answer->ok = 1;
-		answer->vectorNo = request->data.vectorNo;
-		answer->netId = peerInfo(peer)->netId;
-		for(int i = 0; i < request->data.vectorNo; i++)
-		{
-			answer->getVector(i)->x = request->getVector(i)->x;
-			answer->getVector(i)->y = request->getVector(i)->y;
-		}
-		return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
-	}
+	return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
 }
 
 bool PacketHandler::affirmMove(HANDLE_ARGS)
@@ -244,15 +228,6 @@ bool PacketHandler::handleSkillUp(HANDLE_ARGS) {
 	
 	skillUpResponse.skill = skillUpPacket->skill;
 	skillUpResponse.level = 0x0001;
-
-	FogUpdate2 test;
-	test.x = 0;
-	test.y = 0;
-	test.radius = 1;
-	test.unk1 = 2;
-	//uint8 p[] = {0xC5, 0x19, 0x00, 0x00, 0x40, 0x00, 0x00, 0x50};
-	//sendPacket(peer, reinterpret_cast<uint8*>(p), sizeof(p), 3);
-	sendPacket(peer, reinterpret_cast<uint8*>(&test), sizeof(FogUpdate2), 3);
 	
 	return sendPacket(peer, reinterpret_cast<uint8*>(&skillUpResponse),sizeof(skillUpResponse),CHL_GAMEPLAY);
 

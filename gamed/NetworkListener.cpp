@@ -49,8 +49,9 @@ void NetworkListener::netLoop()
 				event.peer->mtu = PEER_MTU;
 
 				event.peer->data = new ClientInfo();
-				peerInfo(event.peer)->setName("HeroWars");
-				peerInfo(event.peer)->setType("Hecarim");
+				peerInfo(event.peer)->setName("IntWars");
+				peerInfo(event.peer)->setType("Jayce");
+				peerInfo(event.peer)->skinNo = 1;
 				peerInfo(event.peer)->netId = 0x40000019;
 
 			break;

@@ -335,20 +335,31 @@ struct MovementAnsDelta
 struct MovementReq
 {
 	PacketHeader header;
-	MovementReqData data;
-	MovementVector vectors;
+	uint8 count;
+	float x;
+	float y;
+	float z;
+	uint32 zero;
+	uint8 vectorNo;
+	uint32 netId;
+	uint8 delta;
 
 	MovementVector *getVector(uint32 index)
 	{
-		if(index >= data.vectorNo)
+		if(index >= vectorNo)
 			return NULL;
 
-		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
+		return &((MovementVector *)((hasDelta()) ? (&delta)+1 : &delta))[index]; //A very fancy way of getting the struct from the dynamic buffer
+	}
+
+	bool hasDelta()
+	{
+		return (delta == 0);
 	}
 
 	uint32 size()
 	{
-		return sizeof(MovementReq)+((data.vectorNo-1)*sizeof(MovementVector));
+		return sizeof(MovementReq)+((vectorNo)*sizeof(MovementVector))+(hasDelta() ? 1 : 0);
 	}
 };
 
@@ -361,22 +372,38 @@ struct MovementAns
 
 	GameHeader header;
 	uint16 ok;
-	uint16 unk;
-	uint16 vectorNo;
+	uint8 vectorNo;
 	uint32 netId;
-	MovementVector vectors;
+	uint8 delta;
 
 	MovementVector *getVector(uint32 index)
 	{
 		if(index >= vectorNo)
 			return NULL;
-		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
+
+		return &((MovementVector *)((hasDelta()) ? (&delta)+1 : &delta))[index]; //A very fancy way of getting the struct from the dynamic buffer
 	}
 
-	static MovementAns *create(uint32 vectorNo)
+	bool hasDelta()
+	{
+		return (delta == 0);
+	}
+
+	static uint32 size(uint8 vectorNo, bool hasDelta = false)
+	{
+		return sizeof(MovementAns)+((vectorNo)*sizeof(MovementVector))+(hasDelta ? 1 : 0);
+	}
+
+	uint32 size()
+	{
+		return size(vectorNo, hasDelta());
+	}
+
+	static MovementAns *create(uint32 vectorNo, bool hasDelta = false)
 	{
 		MovementAns *packet = (MovementAns*)new uint8[size(vectorNo)];
 		memset(packet, 0, size(vectorNo));
+		packet->delta = (hasDelta) ? 0 : 1;
 		packet->header.cmd = PKT_S2C_MoveAns;
 		packet->vectorNo = vectorNo;
 		return packet;
@@ -387,15 +414,6 @@ struct MovementAns
 		delete [](uint8*)packet;
 	}
 
-	static uint32 size(uint32 vectorNo)
-	{
-		return sizeof(MovementAns)+((vectorNo-1)*sizeof(MovementVector));
-	}
-
-	uint32 size()
-	{
-		return size(vectorNo);
-	}
 };
 
 typedef struct _ViewAns
@@ -411,22 +429,6 @@ typedef struct _ViewAns
 	uint8 requestNo;
 } ViewAns;
 
-typedef struct _FogUpdate
-{
-	_FogUpdate()
-	{
-		cmd = PKT_S2C_FogUpdate;
-		x1 = 0;
-		y1 = 0;
-		x2 = 0.5;
-		y2 = 0.5;
-	}
-	uint8 cmd;
-	float x1;
-	float y1;
-	float x2;
-	float y2;
-} FogUpdate;
 
 typedef struct _QueryStatus
 {

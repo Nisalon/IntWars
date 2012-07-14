@@ -54,5 +54,8 @@
     <ClInclude Include="..\..\gamed\ChatBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gamed\Client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,6 +10,7 @@ struct ClientInfo
 		keyChecked = false;
 		name = type = NULL;
 		ticks = 0;
+		skinNo = 0;
 	}
 
 	~ClientInfo()
@@ -51,6 +52,7 @@ struct ClientInfo
 	uint32 netId;
 	uint32 nameLen;
 	uint32 typeLen;
+	uint32 skinNo;
 	int8 *name;
 	int8 *type;
 
