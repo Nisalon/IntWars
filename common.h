@@ -20,8 +20,8 @@ enum GameCmd : uint8
 
 //Currently attuned to PBE 1.0.0.140
 enum PacketCmd : uint8
-{
-	PKT_KeyCheck			= 0x00, //Not a real packet
+{                                               //Channel
+	PKT_KeyCheck			= 0x00, //0
 	PKT_ChatBoxMessage              = 0x00,
 	PKT_S2C_EndSpawn                = 0x12,
 	PKT_C2S_QueryStatusReq          = 0x17,
@@ -37,6 +37,7 @@ enum PacketCmd : uint8
 	PKT_C2S_StartGame               = 0x58,
 	PKT_S2C_SynchVersion            = 0x5A,
 	PKT_C2S_AttentionPing           = 0x5D,
+	PKT_C2S_ScoreBord               = 0x5C, //1
 	PKT_S2C_StartGame               = 0x62,
 	PKT_C2S_OpenShop                = 0x63,
 	PKT_C2S_ClientReady             = 0x64,
@@ -46,11 +47,13 @@ enum PacketCmd : uint8
 	PKT_C2S_MoveReq                 = 0x78,
 	PKT_C2S_MoveConfirm             = 0x7D, 
 	PKT_C2S_ReqBuyItem              = 0x88,
+	PKT_C2S_LockCamera              = 0x88, //1
 	PKT_S2C_QueryStatusAns          = 0x8F,
 	PKT_C2S_Exit                    = 0x96,
 	PKT_World_SendGameNumber        = 0x9A,
 	PKT_S2C_Ping_Load_Info          = 0x9F,
 	PKT_C2S_GameNumberReq           = 0xA6,
+	PKT_C2S_Surrender               = 0xAE, //1
 	PKT_C2S_Click                   = 0xBB,
 	PKT_S2C_FogUpdate2              = 0xC6,
 	PKT_C2S_SynchVersion            = 0xC9,
@@ -58,6 +61,14 @@ enum PacketCmd : uint8
 	PKT_S2C_CharStats               = 0xD0,
 	PKT_Batch                       = 0xFF,
 };
+
+enum MoveType : uint8
+{
+	EMOTE = 1,
+	MOVE = 4,
+	STOP = 10,
+};
+
 
 #define CHL_MAX = 7
 enum Channel : uint8
@@ -86,5 +97,6 @@ enum Spell : uint32
 	SPL_Promote = 0x0410FF72,
 	SPL_Clair = 0x09896765,
 	SPL_Flash = 0x06496EA8, 
+	SPL_Test = 0x0103D94C,
 };
 #endif

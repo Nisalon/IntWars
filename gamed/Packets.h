@@ -228,6 +228,13 @@ typedef struct _AttentionPingAns
 	uint32 response;
 } AttentionPingAns;
 
+struct CameraLock
+{
+	PacketHeader header;
+	uint8 isLock;
+	uint32 padding;
+};
+
 typedef struct _ViewReq
 {
 	uint8 cmd;
@@ -248,94 +255,10 @@ struct MovementVector
 	uint16 y;
 };
 
-struct MovementReqData
-{
-	uint8 count;
-	float x;
-	float y;
-	float z;
-	uint32 zero;
-	uint16 unk;
-	uint16 vectorNo;
-	uint32 netId;
-};
-
-struct MovementReqDelta
-{
-	PacketHeader header;
-	MovementReqData data;
-	uint8 delta;
-	MovementVector vectors;
-
-	MovementReqDelta()
-	{
-		delta = 0;
-	}
-	MovementVector *getVector(uint32 index)
-	{
-		if(index >= data.vectorNo)
-			return NULL;
-
-		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
-	}
-
-	uint32 size()
-	{
-		return sizeof(MovementReqDelta)+((data.vectorNo-1)*sizeof(MovementVector));
-	}
-};
-
-struct MovementAnsDelta
-{
-	MovementAnsDelta()
-	{
-		header.cmd = PKT_S2C_MoveAns;
-	}
-
-	GameHeader header;
-	uint16 ok;
-	uint16 unk;
-	uint16 vectorNo;
-	uint32 netId;
-	uint8 delta;
-	MovementVector vectors;
-
-	MovementVector *getVector(uint32 index)
-	{
-		if(index >= vectorNo)
-			return NULL;
-		return &(&vectors)[index]; //A very fancy way of getting the struct from the dynamic buffer
-	}
-
-	static MovementAnsDelta *create(uint32 vectorNo)
-	{
-		MovementAnsDelta *packet = (MovementAnsDelta*)new uint8[size(vectorNo)];
-		memset(packet, 0, size(vectorNo));
-		packet->header.cmd = PKT_S2C_MoveAns;
-		packet->vectorNo = vectorNo;
-		return packet;
-	}
-
-	static void destroy(MovementAnsDelta *packet)
-	{
-		delete [](uint8*)packet;
-	}
-
-	static uint32 size(uint32 vectorNo)
-	{
-		return sizeof(MovementAnsDelta)+((vectorNo-1)*sizeof(MovementVector));
-	}
-
-	uint32 size()
-	{
-		return size(vectorNo);
-	}
-};
-
 struct MovementReq
 {
 	PacketHeader header;
-	uint8 count;
+	MoveType type;
 	float x;
 	float y;
 	float z;

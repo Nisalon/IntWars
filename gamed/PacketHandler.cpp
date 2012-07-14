@@ -24,6 +24,7 @@ PacketHandler::PacketHandler(ENetHost *server, BlowFish *blowfish)
 	registerHandler(&PacketHandler::affirmMove,            PKT_C2S_MoveConfirm, CHL_C2S);
 	registerHandler(&PacketHandler::handleSkillUp,         PKT_C2S_SkillUp, CHL_C2S);
 	registerHandler(&PacketHandler::handleEmotion,         PKT_C2S_Emotion, CHL_C2S);
+	registerHandler(&PacketHandler::handleNull,            PKT_C2S_LockCamera, CHL_C2S);
 }
 
 PacketHandler::~PacketHandler()

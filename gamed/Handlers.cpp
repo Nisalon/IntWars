@@ -56,8 +56,8 @@ bool PacketHandler::handleSynch(ENetPeer *peer, ENetPacket *packet)
 	SynchVersionAns answer;
 	answer.mapId = 1;
 	answer.players[0].userId = peerInfo(peer)->userId;
-	answer.players[0].skill1 = SPL_Exhaust;
-	answer.players[0].skill2 = SPL_Cleanse;
+	answer.players[0].skill1 = SPL_Ignite;
+	answer.players[0].skill2 = SPL_Flash;
 
 	return sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(SynchVersionAns), 3);
 }
@@ -139,23 +139,28 @@ bool PacketHandler::handleView(ENetPeer *peer, ENetPacket *packet)
 
 	Log::getMainInstance()->writeLine("View (%i), x:%f, y:%f, zoom: %f\n", request->requestNo, request->x, request->y, request->zoom);
 
-	
 	ViewAns answer;
 	answer.requestNo = request->requestNo;
 
-	if(request->requestNo == 0)
-	{
-		sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), 3, UNRELIABLE);
-		answer.requestNo = 1;
-		return sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), 3, UNRELIABLE);
-	}else
-		return sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), 3, UNRELIABLE);
+	return sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), CHL_S2C, UNRELIABLE);
 }
 
 bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 {
 	MovementReq *request = reinterpret_cast<MovementReq*>(packet->data);
-	Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, unk: %i, vectorNo: %i\n", request->x, request->y, request->z, request->count, request->vectorNo);
+
+	switch(request->type)
+	{
+		//TODO, Implement stop commands
+		case STOP:
+			Log::getMainInstance()->writeLine("Move stop");
+			return true;
+		case EMOTE:
+			Log::getMainInstance()->writeLine("Emotion");
+			return true;
+	}
+
+	Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, type: %i, vectorNo: %i\n", request->x, request->y, request->z, request->type, request->vectorNo);
 	for(int i = 0; i < request->vectorNo; i++)
 		printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
 
@@ -259,6 +264,6 @@ bool PacketHandler::handleEmotion(HANDLE_ARGS) {
 	response.header.netId = emotion->header.netId;
 	response.id = emotion->id;
 
-	return sendPacket(peer, reinterpret_cast<uint8*>(&response), sizeof(response),3);
+	return broadcastPacket(reinterpret_cast<uint8*>(&response), sizeof(response), CHL_S2C);
 
 }
