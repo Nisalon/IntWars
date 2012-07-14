@@ -1,0 +1,55 @@
+/** Functions made by Intline9 **/
+unsigned int getHash(const char *str)
+{
+	unsigned int hash = 0;
+	unsigned int mask = 0xF0000000;
+	for(unsigned int i = 0; i < strlen(str); i++)
+	{
+		hash = tolower(str[i]) + (0x10 * hash);
+		if(hash & mask)
+			hash ^= hash & mask ^ ((hash & mask) >> 24);
+	}
+	return hash;
+}
+
+/** Functions made by Intline9 **/
+unsigned int getHashObject(const char *str)
+{
+	unsigned int hash = 0;
+	const char* gobj = "_gobj";
+	for(unsigned int i = 0; i < strlen(str); i++)
+		hash = tolower(str[i]) + (0x1003F * hash);
+	for(unsigned int i = 0; i < strlen(gobj); i++)
+		hash = tolower(gobj[i]) + (0x1003F * hash);
+	return hash;
+}
+
+int main()
+{
+	const char* spell1 = "SummonerRevive";
+	const char* spell2 = "SummonerSmite";
+	const char* spell3 = "SummonerExhaust";
+	const char* spell4 = "SummonerBarrier";
+	const char* spell5 = "SummonerTeleport";
+	const char* spell6 = "SummonerGhost";
+	const char* spell7 = "SummonerHeal";
+	const char* spell8 = "SummonerCleanse";
+	const char* spell9 = "SummonerClarity";
+	const char* spell10 = "SummonerIgnite";
+	const char* spell11 = "SummonerPromote";
+	const char* spell12 = "SummonerClairvoyance";
+	const char* spell13 = "SummonerFlash";
+	printf("| Revive | %s | %08X |\n", spell1 , getHash(spell1));
+	printf("| Smite | %s | %08X |\n", spell2 , getHash(spell2));
+	printf("| Exhaust | %s | %08X |\n", spell3 , getHash(spell3));
+	printf("| Barrier | %s | %08X |\n", spell4 , getHash(spell4));
+	printf("| Teleport | %s | %08X |\n", spell5 , getHash(spell5));
+	printf("| Ghost | %s | %08X |\n", spell6 , getHash(spell6));
+	printf("| Heal | %s | %08X |\n", spell7 , getHash(spell7));
+	printf("| Cleanse | %s | %08X |\n", spell8 , getHash(spell8));
+	printf("| Clarity | %s | %08X |\n", spell9 , getHash(spell9));
+	printf("| Ignite | %s | %08X |\n", spell10 , getHash(spell10));
+	printf("| Promote | %s | %08X |\n", spell11 , getHash(spell11));
+	printf("| Clairvoyance | %s | %08X |\n", spell12 , getHash(spell12));
+	printf("| Flash | %s | %08X |\n", spell13 , getHash(spell13));
+}
