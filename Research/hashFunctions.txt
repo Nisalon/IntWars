@@ -31,14 +31,19 @@ int main()
 	const char* spell3 = "SummonerExhaust";
 	const char* spell4 = "SummonerBarrier";
 	const char* spell5 = "SummonerTeleport";
-	const char* spell6 = "SummonerGhost";
+	const char* spell6 = "SummonerHaste";
 	const char* spell7 = "SummonerHeal";
-	const char* spell8 = "SummonerCleanse";
-	const char* spell9 = "SummonerClarity";
-	const char* spell10 = "SummonerIgnite";
-	const char* spell11 = "SummonerPromote";
+	const char* spell8 = "SummonerBoost";
+	const char* spell9 = "SummonerMana";
+	const char* spell10 = "SummonerDot";
+	const char* spell11 = "SummonerPromoteSR";
 	const char* spell12 = "SummonerClairvoyance";
 	const char* spell13 = "SummonerFlash";
+	const char* spell14 = "SummonerBattleCry";
+	const char* spell15 = "SummonerBarrier";
+	const char* spell16 = "SummonerOdinGarrison";
+	const char* spell17 = "SummonerTestForceSpell";
+
 	printf("| Revive | %s | %08X |\n", spell1 , getHash(spell1));
 	printf("| Smite | %s | %08X |\n", spell2 , getHash(spell2));
 	printf("| Exhaust | %s | %08X |\n", spell3 , getHash(spell3));
@@ -52,4 +57,8 @@ int main()
 	printf("| Promote | %s | %08X |\n", spell11 , getHash(spell11));
 	printf("| Clairvoyance | %s | %08X |\n", spell12 , getHash(spell12));
 	printf("| Flash | %s | %08X |\n", spell13 , getHash(spell13));
+	printf("| Surge | %s | %08X |\n", spell14 , getHash(spell14));
+	printf("| Barrier | %s | %08X |\n", spell15 , getHash(spell15));
+	printf("| Garrison | %s | %08X |\n", spell16 , getHash(spell16));
+	printf("| Test Force | %s | %08X |\n", spell17 , getHash(spell17));
 }
