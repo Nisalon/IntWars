@@ -137,6 +137,14 @@ bool PacketHandler::handleStartGame(HANDLE_ARGS)
 	//uint8 p[] = {0xC5, 0x19, 0x00, 0x00, 0x40, 0x00, 0x00, 0x50};
 	//sendPacket(peer, reinterpret_cast<uint8*>(p), sizeof(p), 3);
 	sendPacket(peer, reinterpret_cast<uint8*>(&test), sizeof(FogUpdate2), 3);
+
+	//playing around 8-)
+	CharacterStats movement;
+	movement.netId = peerInfo(peer)->netId;
+	movement.statType = STI_Movement;
+	movement.statValue = 800;
+	sendPacket(peer,reinterpret_cast<uint8*>(&movement),sizeof(movement), 4);
+
 	return true;
 }
 
@@ -201,6 +209,7 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 		answer->getVector(i)->x = request->getVector(i)->x;
 		answer->getVector(i)->y = request->getVector(i)->y;
 	}
+
 	return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
 }
 

@@ -123,4 +123,15 @@ enum Spell : uint32
 	SPL_Flash = 0x06496EA8, 
 	SPL_Test = 0x0103D94C,
 };
+
+enum StatsIds : uint32
+{
+	STI_Movement = 0x00000400,
+	STI_Gold = 0x00000001,
+	STI_Exp = 0x00000010,
+	STI_Health = 0x00000005,
+	STI_AbilityPower = 0x00008000,
+	STI_AttackDamage = 0x00002000,
+	STI_Mana = 0x0000000a,
+};
 #endif

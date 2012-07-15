@@ -412,14 +412,16 @@ struct CharacterStats
 		header.netId = 0;
 		header.ticks = clock();
 
-		updateNo = 1;
-		type = 1;
+		updateNo = 0x01;
+		length = 0x08;
 	}
 	GameHeader header;
 	uint8 updateNo;
-	uint8 type;
+	uint8 length;
+	uint32 netId;
+	uint32 statType;
+	float statValue;
 };
-
 struct StatsGold
 {
 	StatsGold(float g)
