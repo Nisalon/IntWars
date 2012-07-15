@@ -113,7 +113,7 @@ bool PacketHandler::handleMap(ENetPeer *peer, ENetPacket *packet)
 bool PacketHandler::handleSpawn(ENetPeer *peer, ENetPacket *packet)
 {
 	HeroSpawn spawn;
-	spawn.netId = 0x40000019; 
+	spawn.netId = peerInfo(peer)->netId; 
 	spawn.gameId = 0;
 	memcpy(spawn.name, peerInfo(peer)->name, peerInfo(peer)->nameLen);
 	memcpy(spawn.type, peerInfo(peer)->type, peerInfo(peer)->typeLen);
@@ -159,7 +159,17 @@ bool PacketHandler::handleView(ENetPeer *peer, ENetPacket *packet)
 	ViewAns answer;
 	answer.requestNo = request->requestNo;
 
-	return sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), CHL_S2C, UNRELIABLE);
+	sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), CHL_S2C, UNRELIABLE);
+	enet_host_flush(peer->host);
+	
+	if(request->requestNo == 0xFE)
+	{
+		answer.requestNo = 0xFF;
+		sendPacket(peer, reinterpret_cast<uint8*>(&answer), sizeof(ViewAns), CHL_S2C, UNRELIABLE);
+	}
+
+	return true;
+
 }
 
 bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
@@ -170,10 +180,10 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 	{
 		//TODO, Implement stop commands
 		case STOP:
-			Log::getMainInstance()->writeLine("Move stop");
+			Log::getMainInstance()->writeLine("Move stop\n");
 			return true;
 		case EMOTE:
-			Log::getMainInstance()->writeLine("Emotion");
+			Log::getMainInstance()->writeLine("Emotion\n");
 			return true;
 	}
 
@@ -192,12 +202,6 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 		answer->getVector(i)->y = request->getVector(i)->y;
 	}
 	return broadcastPacket(reinterpret_cast<uint8*>(answer), answer->size(), 4);
-}
-
-bool PacketHandler::affirmMove(HANDLE_ARGS)
-{
-	//resend last move packet if this is _not_ received
-	return true;
 }
 
 bool PacketHandler::handleLoadPing(ENetPeer *peer, ENetPacket *packet)
@@ -222,21 +226,38 @@ bool PacketHandler::handleQueryStatus(HANDLE_ARGS)
 
 bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 {
-	ChatBoxMessage* message = reinterpret_cast<ChatBoxMessage*>(packet->data);
+	ChatMessage* message = reinterpret_cast<ChatMessage*>(packet->data);
 
-	switch(message->cmd)
+	//Lets do commands
+	if(message->msg == '.')
+	{
+		const char *cmd[] = {".gold", ".help"};
+
+
+		//Gold
+		if(strncmp(message->getMessage(), cmd[0], strlen(cmd[0])) == 0)
+		{
+			float gold = (float)atoi(&message->getMessage()[strlen(cmd[0])+1]);
+			StatsGold stat(gold);
+			stat.netId = peerInfo(peer)->netId;
+			Log::getMainInstance()->writeLine("Added %f gold to him\n", gold);
+			sendPacket(peer, (uint8*)&stat, sizeof(StatsGold), CHL_LOW_PRIORITY, 2);
+			return true;
+		}
+	}
+
+	switch(message->type)
 	{
 	case CMT_ALL:
-	//!TODO make a player class and foreach player in game send the message
-		return sendPacket(peer,packet->data,packet->dataLength,CHL_COMMUNICATION);
+		return broadcastPacket(packet->data, packet->dataLength, CHL_COMMUNICATION);
 		break;
 	case CMT_TEAM:
 	//!TODO make a team class and foreach player in the team send the message
-		return sendPacket(peer,packet->data,packet->dataLength,CHL_COMMUNICATION);
+		return sendPacket(peer, packet->data, packet->dataLength, CHL_COMMUNICATION);
 		break;
 	default:
-		Log::getMainInstance()->errorLine("Unknow ChatMessageType\n");
-		return sendPacket(peer,packet->data,packet->dataLength,CHL_COMMUNICATION);
+		Log::getMainInstance()->errorLine("Unknown ChatMessageType\n");
+		return sendPacket(peer,packet->data,packet->dataLength, CHL_COMMUNICATION);
 		break;
 	}
 	return false;

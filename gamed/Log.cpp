@@ -126,12 +126,13 @@ void Log::vaWriteLine(const char* buffer,va_list al)
 	switch(m_type)
 	{
 	case LT_NORMAL:
+		operator<<(*m_stream," ");
 		break;
 	case LT_DEBUG:
-		operator<<(*m_stream,"[DEBUG]");
+		operator<<(*m_stream,"[DEBUG] ");
 		break;
 	case LT_ERROR:
-		operator<<(*m_stream,"[ERROR]");
+		operator<<(*m_stream,"[ERROR] ");
 		break;
 	}
 	vsprintf_s(m_buffer,LOG_BUFFER_SIZE,buffer,al);

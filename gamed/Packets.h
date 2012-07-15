@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <enet/enet.h>
 #include "common.h"
-#include "ChatBox.h"
+#include <time.h>
 
 #if defined( __GNUC__ )
 #pragma pack(1)
@@ -403,12 +403,49 @@ typedef struct _WorldSendGameNumber
 	uint8 data[0x80];
 } WorldSendGameNumber;
 
-typedef struct _ChatBoxMessage
+
+struct CharacterStats
 {
-	uint32 unk;
-	ChatMessageType cmd;
-	uint32 msgLength;	
-} ChatBoxMessage;
+	CharacterStats()
+	{
+		header.cmd = (GameCmd)PKT_S2C_CharStats;
+		header.netId = 0;
+		header.ticks = clock();
+
+		updateNo = 1;
+		type = 1;
+	}
+	GameHeader header;
+	uint8 updateNo;
+	uint8 type;
+};
+
+struct StatsGold
+{
+	StatsGold(float g)
+	{
+		type = 1;
+		gold = g;
+	}
+
+	CharacterStats header;
+	uint32 netId;
+	uint32 type;
+	float gold;
+};
+
+struct ChatMessage
+{
+	uint32 playerNo;
+	ChatType type;
+	uint32 lenght;
+	int8 msg;
+
+	int8 *getMessage()
+	{
+		return &msg;
+	}
+};
 
 typedef struct _StatePacket
 {
@@ -433,9 +470,9 @@ struct FogUpdate2
 	uint8 unk1;
 };
 
-typedef struct _HeroSpawn
+struct HeroSpawn
 {
-	_HeroSpawn()
+	HeroSpawn()
 	{
 		header.cmd = PKT_S2C_HeroSpawn;
 		unk1 = 0;
@@ -453,7 +490,7 @@ typedef struct _HeroSpawn
 	uint16 unk1;
 	uint8 name[128];
 	uint8 type[40];
-} HeroSpawn;
+} ;
 
 typedef struct _SkillUpPacket
 {

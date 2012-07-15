@@ -37,46 +37,48 @@ enum GameCmd : uint8
 
 //Currently attuned to PBE 1.0.0.140
 enum PacketCmd : uint8
-{                                               //Channel
-	PKT_KeyCheck			= 0x00, //0
-	PKT_ChatBoxMessage              = 0x00,
-	PKT_S2C_EndSpawn                = 0x12,
-	PKT_C2S_QueryStatusReq          = 0x17,
-	PKT_S2C_SkillUp                 = 0x18,
-	PKT_C2S_Ping_Load_Info          = 0x19,
-	PKT_S2C_ViewAns                 = 0x2E,
-	PKT_C2S_ViewReq                 = 0x30,
-	PKT_C2S_SkillUp                 = 0x3E,
+{                                               //Channel //Type
+	PKT_KeyCheck			= 0x00, //0       
+	PKT_ChatBoxMessage              = 0x00, //5
+	PKT_S2C_EndSpawn                = 0x12, //
+	PKT_C2S_QueryStatusReq          = 0x17, //1
+	PKT_S2C_SkillUp                 = 0x18, //3
+	PKT_C2S_Ping_Load_Info          = 0x19, //1
+	PKT_S2C_ViewAns                 = 0x2E, //3
+	PKT_C2S_ViewReq                 = 0x30, //1
+	PKT_C2S_SkillUp                 = 0x3E, //1
 	PKT_S2C_AttentionPing           = 0x47,
 	PKT_S2C_Emotion                 = 0x49,
 	PKT_C2S_Emotion                 = 0x4E,
 	PKT_S2C_HeroSpawn               = 0x52,
-	PKT_C2S_StartGame               = 0x58,
-	PKT_S2C_SynchVersion            = 0x5A,
+	PKT_C2S_StartGame               = 0x58, //1
+	PKT_S2C_SynchVersion            = 0x5A, //3
 	PKT_C2S_AttentionPing           = 0x5D,
 	PKT_C2S_ScoreBord               = 0x5C, //1
-	PKT_S2C_StartGame               = 0x62,
-	PKT_C2S_OpenShop                = 0x63,
-	PKT_C2S_ClientReady             = 0x64,
-	PKT_S2C_LoadHero                = 0x65,
-	PKT_S2C_LoadName                = 0x66,
-	PKT_S2C_LoadScreenInfo          = 0x67,
-	PKT_C2S_MoveReq                 = 0x78,
-	PKT_C2S_MoveConfirm             = 0x7D, 
-	PKT_C2S_ReqBuyItem              = 0x88,
+	PKT_S2C_StartGame               = 0x62, 
+	PKT_C2S_OpenShop                = 0x63, //1
+	PKT_C2S_ClientReady             = 0x64, //6
+	PKT_S2C_LoadHero                = 0x65, //6
+	PKT_S2C_LoadName                = 0x66, //6
+	PKT_S2C_LoadScreenInfo          = 0x67, //6
+	PKT_C2S_MoveAnswer              = 0x67, //4
+	PKT_C2S_MoveReq                 = 0x78, //1
+	PKT_C2S_MoveConfirm             = 0x7D, //1
+	PKT_C2S_ReqBuyItem              = 0x89, //1
 	PKT_C2S_LockCamera              = 0x88, //1
 	PKT_S2C_QueryStatusAns          = 0x8F,
-	PKT_C2S_Exit                    = 0x96,
-	PKT_World_SendGameNumber        = 0x9A,
-	PKT_S2C_Ping_Load_Info          = 0x9F,
-	PKT_C2S_GameNumberReq           = 0xA6,
+	PKT_C2S_Exit                    = 0x96, //1
+	PKT_World_SendGameNumber        = 0x9A, //3
+	PKT_S2C_Ping_Load_Info          = 0x9F, //4
+	PKT_C2S_GameNumberReq           = 0xA6, //1
 	PKT_C2S_Surrender               = 0xAE, //1
-	PKT_C2S_Click                   = 0xBB,
-	PKT_S2C_FogUpdate2              = 0xC6,
-	PKT_C2S_SynchVersion            = 0xC9,
-	PKT_C2S_CharLoaded              = 0xCA,
-	PKT_S2C_CharStats               = 0xD0,
-	PKT_Batch                       = 0xFF,
+	PKT_C2S_StatsConfirm            = 0xB2, //1
+	PKT_C2S_Click                   = 0xBB, //1
+	PKT_S2C_FogUpdate2              = 0xC6, //3
+	PKT_C2S_SynchVersion            = 0xC9, //1
+	PKT_C2S_CharLoaded              = 0xCA, //1
+	PKT_S2C_CharStats               = 0xD0, //4
+	PKT_Batch                       = 0xFF, //3
 };
 
 enum MoveType : uint8
@@ -86,6 +88,11 @@ enum MoveType : uint8
 	STOP = 10,
 };
 
+enum ChatType : uint32
+{
+	CHAT_ALL = 0,
+	CHAT_TEAM = 1,
+};
 
 #define CHL_MAX = 7
 enum Channel : uint8
