@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "stdafx.h"
 #include "NetworkListener.h"
 #include "Log.h"
 
@@ -60,7 +61,7 @@ void NetworkListener::netLoop()
 		switch (event.type)
 		{
 			case ENET_EVENT_TYPE_CONNECT:
-				Log::getMainInstance()->writeLine("A new client connected connected\n");
+				Logging->writeLine("A new client connected connected\n");
 
 				/* Set some defaults */
 				event.peer->mtu = PEER_MTU;
@@ -84,7 +85,7 @@ void NetworkListener::netLoop()
 		break;
 
 		case ENET_EVENT_TYPE_DISCONNECT:
-			Log::getMainInstance()->writeLine("Peer disconnected.\n");
+			Logging->writeLine("Peer disconnected.\n");
 
 			/* Cleanup */
 			delete (ClientInfo*)event.peer->data;

@@ -15,28 +15,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "stdafx.h"
-#include "NetworkListener.h"
-#include "Log.h"
+#ifndef _STDAFX_H
+#define _STDAFX_H
 
-#define SERVER_HOST ENET_HOST_ANY 
-#define SERVER_PORT 5109
-#define SERVER_KEY "17BLOhi6KZsTtldTsizvHg=="
+#include <stdio.h>
+#include <cstring>
+#include <iostream>
+#include <fstream>
+#include <string>
 
-#define SERVER_VERSION "0.0.2"
+typedef char int8;
+typedef short int16;
+typedef int int32;
+typedef long long int64; 
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned long long uint64; 
 
-int main(int argc, char ** argv) 
-{
-	Logging->writeLine("IntWars %s\n",SERVER_VERSION);
-	NetworkListener *listener = new NetworkListener();
-	ENetAddress address;
-	address.host = SERVER_HOST;
-	address.port = SERVER_PORT;
 
-	listener->initialize(&address, SERVER_KEY);
-	Logging->writeLine("Starting net loop\n");
-	listener->netLoop();
-	delete listener;
+#define PKT_MAX = 0x100
+#define Logging Log::getMainInstance()
 
-	Logging->writeLine("Goodbye\n");
-}
+#endif

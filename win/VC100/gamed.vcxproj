@@ -53,8 +53,7 @@
       <AdditionalIncludeDirectories>..\..\dep\include; ..\..\;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
@@ -93,6 +92,7 @@
     <ClInclude Include="..\..\gamed\Log.h" />
     <ClInclude Include="..\..\gamed\PacketHandler.h" />
     <ClInclude Include="..\..\gamed\Packets.h" />
+    <ClInclude Include="..\..\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="enet-1.2.5.vcxproj">

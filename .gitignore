@@ -61,6 +61,9 @@ ipch
 # Subversion data folders
 .svn/
 
+#resharper
+*_resharper*
+
 #Custom
 LoLClient_0.0.0.118
 

@@ -17,19 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef _COMMON_H
 #define _COMMON_H
-#include <stdio.h>
-#include <cstring>
 
-typedef char int8;
-typedef short int16;
-typedef int int32;
-typedef long long int64; 
-typedef unsigned char uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned long long uint64; 
-
-#define PKT_MAX = 0x100
 enum GameCmd : uint8
 {
 	PKT_S2C_MoveAns                 = 0x67,

@@ -17,9 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef _LOG_H
 #define _LOG_H
-#include <iostream>
-#include <fstream>
-#include <string>
+
 #include <Windows.h>
 
 #define LOG_BUFFER_SIZE 1024

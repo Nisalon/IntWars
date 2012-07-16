@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "stdafx.h"
 #include "PacketHandler.h"
 
 bool PacketHandler::handleNull(HANDLE_ARGS)
@@ -35,17 +36,17 @@ bool PacketHandler::handleKeyCheck(ENetPeer *peer, ENetPacket *packet)
 	{
 		sprintf(&buffer[i*3], "%02X ", p[i]);
 	}
-	PDEBUG_LOG_LINE(Log::getMainInstance()," Enc id: %s\n", buffer);*/
+	PDEBUG_LOG_LINE(Logging," Enc id: %s\n", buffer);*/
 	
 	if(userId == keyCheck->userId)
 	{
-		PDEBUG_LOG_LINE(Log::getMainInstance()," User got the same key as i do, go on!\n");
+		PDEBUG_LOG_LINE(Logging," User got the same key as i do, go on!\n");
 		peerInfo(peer)->keyChecked = true;
 		peerInfo(peer)->userId = userId;
 	}
 	else
 	{
-		Log::getMainInstance()->errorLine(" WRONG KEY, GTFO!!!\n");
+		Logging->errorLine(" WRONG KEY, GTFO!!!\n");
 		return false;
 	}
 
@@ -68,7 +69,7 @@ bool PacketHandler::handleGameNumber(ENetPeer *peer, ENetPacket *packet)
 bool PacketHandler::handleSynch(ENetPeer *peer, ENetPacket *packet)
 {
 	SynchVersion *version = reinterpret_cast<SynchVersion*>(packet->data);
-	Log::getMainInstance()->writeLine("Client version: %s\n", version->version);
+	Logging->writeLine("Client version: %s\n", version->version);
 
 	SynchVersionAns answer;
 	answer.mapId = 1;
@@ -153,7 +154,7 @@ bool PacketHandler::handleAttentionPing(ENetPeer *peer, ENetPacket *packet)
 	AttentionPing *ping = reinterpret_cast<AttentionPing*>(packet->data);
 	AttentionPingAns response(ping);
 
-	Log::getMainInstance()->writeLine("Plong x: %f, y: %f, z: %f, type: %i\n", ping->x, ping->y, ping->z, ping->type);
+	Logging->writeLine("Plong x: %f, y: %f, z: %f, type: %i\n", ping->x, ping->y, ping->z, ping->type);
 
 	return broadcastPacket(reinterpret_cast<uint8*>(&response), sizeof(AttentionPing), 3);
 }
@@ -162,7 +163,7 @@ bool PacketHandler::handleView(ENetPeer *peer, ENetPacket *packet)
 {
 	ViewReq *request = reinterpret_cast<ViewReq*>(packet->data);
 
-	Log::getMainInstance()->writeLine("View (%i), x:%f, y:%f, zoom: %f\n", request->requestNo, request->x, request->y, request->zoom);
+	Logging->writeLine("View (%i), x:%f, y:%f, zoom: %f\n", request->requestNo, request->x, request->y, request->zoom);
 
 	ViewAns answer;
 	answer.requestNo = request->requestNo;
@@ -188,14 +189,14 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 	{
 		//TODO, Implement stop commands
 		case STOP:
-			Log::getMainInstance()->writeLine("Move stop\n");
+			Logging->writeLine("Move stop\n");
 			return true;
 		case EMOTE:
-			Log::getMainInstance()->writeLine("Emotion\n");
+			Logging->writeLine("Emotion\n");
 			return true;
 	}
 
-	Log::getMainInstance()->writeLine("Move to(normal): x:%f, y:%f, z: %f, type: %i, vectorNo: %i\n", request->x, request->y, request->z, request->type, request->vectorNo);
+	Logging->writeLine("Move to(normal): x:%f, y:%f, z: %f, type: %i, vectorNo: %i\n", request->x, request->y, request->z, request->type, request->vectorNo);
 	for(int i = 0; i < request->vectorNo; i++)
 		printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
 
@@ -223,7 +224,7 @@ bool PacketHandler::handleLoadPing(ENetPeer *peer, ENetPacket *packet)
 	response.userId = peerInfo(peer)->userId;
 
 
-	Log::getMainInstance()->writeLine("loaded: %f, ping: %f, %i, %f\n", loadInfo->loaded, loadInfo->ping, loadInfo->unk4, loadInfo->f3);
+	Logging->writeLine("loaded: %f, ping: %f, %i, %f\n", loadInfo->loaded, loadInfo->ping, loadInfo->unk4, loadInfo->f3);
 	return broadcastPacket(reinterpret_cast<uint8*>(&response), sizeof(PingLoadInfo), 4, UNRELIABLE);
 }
 
@@ -240,19 +241,102 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 	//Lets do commands
 	if(message->msg == '.')
 	{
-		const char *cmd[] = {".gold", ".help"};
+		const char *cmd[] = {".gold", ".setgold", ".speed", ".health", ".xp", ".ap", ".ad", ".mana", ".help"};
 
 
-		//Gold
+		// Add Gold
 		if(strncmp(message->getMessage(), cmd[0], strlen(cmd[0])) == 0)
 		{
 			float gold = (float)atoi(&message->getMessage()[strlen(cmd[0])+1]);
 			StatsGold stat(gold);
 			stat.netId = peerInfo(peer)->netId;
-			Log::getMainInstance()->writeLine("Added %f gold to him\n", gold);
+			Logging->writeLine("Added %f gold to him\n", gold);
 			sendPacket(peer, (uint8*)&stat, sizeof(StatsGold), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
+
+		CharacterStats charStats;
+		charStats.netId = peerInfo(peer)->netId;
+
+		// Set Gold
+		if(strncmp(message->getMessage(), cmd[1], strlen(cmd[1])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[1])+1]);
+
+			charStats.statType = STI_Gold;
+			charStats.statValue = data;
+			Logging->writeLine("set gold to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+
+		//movement
+		if(strncmp(message->getMessage(), cmd[2], strlen(cmd[2])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[2])+1]);
+
+			charStats.statType = STI_Movement;
+			charStats.statValue = data;
+			Logging->writeLine("set champ speed to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+		//health
+		if(strncmp(message->getMessage(), cmd[3], strlen(cmd[3])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[3])+1]);
+
+			charStats.statType = STI_Health;
+			charStats.statValue = data;
+			Logging->writeLine("set champ health to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+		//experience
+		if(strncmp(message->getMessage(), cmd[4], strlen(cmd[4])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[4])+1]);
+
+			charStats.statType = STI_Exp;
+			charStats.statValue = data;
+			Logging->writeLine("set champ exp to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+		//AbilityPower
+		if(strncmp(message->getMessage(), cmd[5], strlen(cmd[5])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[5])+1]);
+
+			charStats.statType = STI_AbilityPower;
+			charStats.statValue = data;
+			Logging->writeLine("set champ abilityPower to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+		//Attack damage
+		if(strncmp(message->getMessage(), cmd[6], strlen(cmd[6])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[6])+1]);
+
+			charStats.statType = STI_AttackDamage;
+			charStats.statValue = data;
+			Logging->writeLine("set champ attack damage to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+		//Mana
+		if(strncmp(message->getMessage(), cmd[7], strlen(cmd[7])) == 0)
+		{
+			float data = (float)atoi(&message->getMessage()[strlen(cmd[7])+1]);
+
+			charStats.statType = STI_Mana;
+			charStats.statValue = data;
+			Logging->writeLine("set champ mana to %f\n", data);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			return true;
+		}
+
 	}
 
 	switch(message->type)
@@ -265,7 +349,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 		return sendPacket(peer, packet->data, packet->dataLength, CHL_COMMUNICATION);
 		break;
 	default:
-		Log::getMainInstance()->errorLine("Unknown ChatMessageType\n");
+		Logging->errorLine("Unknown ChatMessageType\n");
 		return sendPacket(peer,packet->data,packet->dataLength, CHL_COMMUNICATION);
 		break;
 	}
@@ -292,19 +376,19 @@ bool PacketHandler::handleEmotion(HANDLE_ARGS) {
 	{
 	case 0:
 		//dance
-		Log::getMainInstance()->writeLine("dance");
+		Logging->writeLine("dance");
 		break;
 	case 1:
 		//taunt
-		Log::getMainInstance()->writeLine("taunt");
+		Logging->writeLine("taunt");
 		break;
 	case 2:
 		//laugh
-		Log::getMainInstance()->writeLine("laugh");
+		Logging->writeLine("laugh");
 		break;
 	case 3:
 		//joke
-		Log::getMainInstance()->writeLine("joke");
+		Logging->writeLine("joke");
 		break;
 	}
 	EmotionResponse response;
