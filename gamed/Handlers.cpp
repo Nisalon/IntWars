@@ -140,11 +140,12 @@ bool PacketHandler::handleStartGame(HANDLE_ARGS)
 	sendPacket(peer, reinterpret_cast<uint8*>(&test), sizeof(FogUpdate2), 3);
 
 	//playing around 8-)
+/*
 	CharacterStats movement;
 	movement.netId = peerInfo(peer)->netId;
 	movement.statType = STI_Movement;
 	movement.statValue = 800;
-	sendPacket(peer,reinterpret_cast<uint8*>(&movement),sizeof(movement), 4);
+	sendPacket(peer,reinterpret_cast<uint8*>(&movement),sizeof(movement), 4);*/
 
 	return true;
 }
@@ -241,34 +242,23 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 	//Lets do commands
 	if(message->msg == '.')
 	{
-		const char *cmd[] = {".gold", ".setgold", ".speed", ".health", ".xp", ".ap", ".ad", ".mana", ".help"};
+		const char *cmd[] = {".gold", ".speed", ".health", ".xp", ".ap", ".ad", ".mana", ".help"};
 
 
-		// Add Gold
+		// Set Gold
 		if(strncmp(message->getMessage(), cmd[0], strlen(cmd[0])) == 0)
 		{
 			float gold = (float)atoi(&message->getMessage()[strlen(cmd[0])+1]);
-			StatsGold stat(gold);
-			stat.netId = peerInfo(peer)->netId;
-			Logging->writeLine("Added %f gold to him\n", gold);
-			sendPacket(peer, (uint8*)&stat, sizeof(StatsGold), CHL_LOW_PRIORITY, 2);
+			CharacterStats *stats = CharacterStats::create(FM1_Gold, 0, 0, 0, 0);
+			stats->netId = peerInfo(peer)->netId;
+			stats->setValue(1, FM1_Gold, gold);
+			
+			Logging->writeLine("Set gold to %f\n", gold);
+			sendPacket(peer, reinterpret_cast<uint8*>(stats), stats->getSize(), CHL_LOW_PRIORITY, 2);
+			stats->destroy();
 			return true;
 		}
-
-		CharacterStats charStats;
-		charStats.netId = peerInfo(peer)->netId;
-
-		// Set Gold
-		if(strncmp(message->getMessage(), cmd[1], strlen(cmd[1])) == 0)
-		{
-			float data = (float)atoi(&message->getMessage()[strlen(cmd[1])+1]);
-
-			charStats.statType = STI_Gold;
-			charStats.statValue = data;
-			Logging->writeLine("set gold to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
-			return true;
-		}
+		/*
 
 		//movement
 		if(strncmp(message->getMessage(), cmd[2], strlen(cmd[2])) == 0)
@@ -278,7 +268,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_Movement;
 			charStats.statValue = data;
 			Logging->writeLine("set champ speed to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
 		//health
@@ -289,7 +279,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_Health;
 			charStats.statValue = data;
 			Logging->writeLine("set champ health to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
 		//experience
@@ -300,7 +290,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_Exp;
 			charStats.statValue = data;
 			Logging->writeLine("set champ exp to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
 		//AbilityPower
@@ -311,7 +301,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_AbilityPower;
 			charStats.statValue = data;
 			Logging->writeLine("set champ abilityPower to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
 		//Attack damage
@@ -322,7 +312,7 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_AttackDamage;
 			charStats.statValue = data;
 			Logging->writeLine("set champ attack damage to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
 		//Mana
@@ -333,9 +323,10 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 			charStats.statType = STI_Mana;
 			charStats.statValue = data;
 			Logging->writeLine("set champ mana to %f\n", data);
-			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY);
+			sendPacket(peer,reinterpret_cast<uint8*>(&charStats),sizeof(charStats), CHL_LOW_PRIORITY, 2);
 			return true;
 		}
+		*/
 
 	}
 

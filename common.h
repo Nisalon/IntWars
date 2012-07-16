@@ -112,6 +112,42 @@ enum Spell : uint32
 	SPL_Test = 0x0103D94C,
 };
 
+enum MasterMask : uint8
+{
+	MM_One          = 0x0001,
+	MM_Two          = 0x0002,
+	MM_Three        = 0x0004,
+	MM_Four         = 0x0008,
+	MM_Five         = 0x0010,
+};
+
+enum FieldMaskOne : uint32
+{
+	FM1_Gold        = 0x00000001,
+};
+
+enum FieldMaskTwo : uint32
+{
+	FM2_Armor       = 0x00000100,
+	FM2_Hp5         = 0x00000400,
+	FM2_Mp5         = 0x00000800,
+	FM2_Ap          = 0x00008000,
+};
+
+enum FieldMaskThree : uint32
+{
+};
+
+enum FieldMaskFour : uint32
+{
+	FM4_MaxHp       = 0x00000001,
+	FM4_CurrentHp   = 0x00000004,
+};
+
+enum FieldMaskFive : uint32
+{
+};
+
 enum StatsIds : uint32
 {
 	STI_Movement = 0x00000400,

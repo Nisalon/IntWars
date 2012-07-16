@@ -406,37 +406,118 @@ typedef struct _WorldSendGameNumber
 
 struct CharacterStats
 {
-	CharacterStats()
+	static uint32 countBits(uint32 mask, bool addMask = true)
 	{
-		header.cmd = (GameCmd)PKT_S2C_CharStats;
-		header.netId = 0;
-		header.ticks = clock();
+		uint32 size = 0;
 
-		updateNo = 0x01;
-		type = 0x02;
+		for(int i = 0; i < 32; i++)
+		{
+			if(mask & 1)
+				size++;
+			mask >>= 1;
+		}
+		if(addMask && size > 0)
+			size++;
+		return size;
 	}
+
+	uint32 getSize()
+	{
+		uint32 blockNo = 0;
+		uint32 size = sizeof(GameHeader)+2+4;
+		uint32 *offset = &mask;
+
+		//How many blocks do we have?
+		if(masterMask & MM_One)   blockNo++;
+		if(masterMask & MM_Two)   blockNo++;
+		if(masterMask & MM_Three) blockNo++;
+		if(masterMask & MM_Four)  blockNo++;
+		if(masterMask & MM_Five)  blockNo++;
+
+		for(int i = 0, x = 0; i < blockNo; i++)
+		{
+			uint32 bits = countBits(offset[x], false);
+			size += bits*4+4;
+			x += bits+1;
+		}
+		return size;
+	}
+
+	static CharacterStats *create(uint32 one, uint32 two, uint32 three, uint32 four, uint32 five)
+	{
+		//Calculate the total size needed
+		uint32 size = sizeof(GameHeader)+2+4; //The header + updateNo + masterMask + netId
+		size += countBits(one)*4;
+		size += countBits(two)*4;
+		size += countBits(three)*4;
+		size += countBits(four)*4;
+		size += countBits(five)*4;
+
+		//Set the defaults
+		CharacterStats *stats = (CharacterStats*)new uint8[size];
+		memset(stats, 0, size);
+		stats->header.cmd = (GameCmd)PKT_S2C_CharStats;
+		stats->header.ticks = clock();
+		stats->updateNo = 1;
+
+		//Set the master mask
+		if(one > 0)   stats->masterMask |= MM_One;
+		if(two > 0)   stats->masterMask |= MM_Two;
+		if(three > 0) stats->masterMask |= MM_Three;
+		if(four > 0)  stats->masterMask |= MM_Four;
+		if(five > 0)  stats->masterMask |= MM_Five;
+		
+		//Set all the masks
+		uint32 *offset = &stats->mask;
+		uint32 x = 0;
+		offset[x] = one;
+		x += countBits(one, false);
+		offset[x] = two;
+		x += countBits(two, false);
+		offset[x] = three;
+		x += countBits(three, false);
+		offset[x] = four;
+		x += countBits(four, false);
+		offset[x] = five;
+
+		return stats;
+	}
+
+	void destroy()
+	{
+		delete[]this;
+	}
+
+	void setValue(FieldMaskOne field, float value)
+	{
+		setValue(1, field, value);
+	}
+
+	void setValue(uint8 blockNo, uint32 field, float value)
+	{
+		blockNo -= 1; //We count the fields from 1 to 5
+		uint32 *offset = &mask;
+
+		//Get the offset for the block number
+		uint32 x = 0;
+		for(int i = 0; i < blockNo; i++)
+			x += countBits(offset[x], false);
+
+		//Get the offset for the field
+		for(uint32 i = 0, mask = 1; i < 32; i++)
+		{
+			if(mask & field)
+				offset[x+i+1] = htonl(value);
+			mask <<= 1;
+		}
+
+	}
+
 	GameHeader header;
 	uint8 updateNo;
-	uint8 type; // I don't know
-	// types:
-	// 08 = movement speed, hp, mana, exp
-	// 02 = ap, ad
+	uint8 masterMask;
 	uint32 netId;
-	uint32 statType;
-	float statValue;
-};
-struct StatsGold
-{
-	StatsGold(float g)
-	{
-		type = 1;
-		gold = g;
-	}
-
-	CharacterStats header;
-	uint32 netId;
-	uint32 type;
-	float gold;
+	uint32 mask;
 };
 
 struct ChatMessage
