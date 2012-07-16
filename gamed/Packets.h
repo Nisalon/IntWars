@@ -413,11 +413,14 @@ struct CharacterStats
 		header.ticks = clock();
 
 		updateNo = 0x01;
-		length = 0x08;
+		type = 0x02;
 	}
 	GameHeader header;
 	uint8 updateNo;
-	uint8 length;
+	uint8 type; // I don't know
+	// types:
+	// 08 = movement speed, hp, mana, exp
+	// 02 = ap, ad
 	uint32 netId;
 	uint32 statType;
 	float statValue;
