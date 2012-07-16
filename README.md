@@ -24,4 +24,4 @@ Want to join? Contact us and show us some work.
 
 Contact
 -------
-We are at irc freenode.net#LoLEmu
+We are at irc.freenode.net#HeroWars
