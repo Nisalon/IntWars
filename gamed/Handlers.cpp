@@ -202,7 +202,6 @@ bool PacketHandler::handleMove(ENetPeer *peer, ENetPacket *packet)
 		printf("     Vector %i, x: %i, y: %i\n", i, request->getVector(i)->x, request->getVector(i)->y);
 
 	MovementAns *answer = MovementAns::create(request->vectorNo, request->hasDelta());
-	answer->header.ticks = peerInfo(peer)->getTicks();
 	answer->ok = 1;
 	answer->vectorNo = request->vectorNo;
 	answer->netId = peerInfo(peer)->netId;
@@ -242,13 +241,31 @@ bool PacketHandler::handleChatBoxMessage(HANDLE_ARGS)
 	//Lets do commands
 	if(message->msg == '.')
 	{
-		const char *cmd[] = {".gold", ".speed", ".health", ".xp", ".ap", ".ad", ".mana", ".help"};
+		const char *cmd[] = {".set", ".gold", ".speed", ".health", ".xp", ".ap", ".ad", ".mana", ".help"};
 
-
-		// Set Gold
+		//Set field
 		if(strncmp(message->getMessage(), cmd[0], strlen(cmd[0])) == 0)
 		{
-			float gold = (float)atoi(&message->getMessage()[strlen(cmd[0])+1]);
+			uint32 blockNo = atoi(&message->getMessage()[strlen(cmd[0])+1]);
+			uint32 fieldNo = atoi(&message->getMessage()[strlen(cmd[0])+3]);
+			float value = (float)atoi(&message->getMessage()[strlen(cmd[0])+5]);
+
+			uint32 mask = 1 << abs(((int)fieldNo-1));
+			
+			CharacterStats *stats = CharacterStats::create(blockNo, mask);
+			stats->netId = peerInfo(peer)->netId;
+			stats->setValue(blockNo, mask, value);
+
+			Logging->writeLine("Setting to %f in block: %i, field: %i\n", value, blockNo, fieldNo);
+			sendPacket(peer, reinterpret_cast<uint8*>(stats), stats->getSize(), CHL_LOW_PRIORITY, 2);
+			stats->destroy();
+			return true;
+		}
+
+		// Set Gold
+		if(strncmp(message->getMessage(), cmd[1], strlen(cmd[1])) == 0)
+		{
+			float gold = (float)atoi(&message->getMessage()[strlen(cmd[1])+1]);
 			CharacterStats *stats = CharacterStats::create(FM1_Gold, 0, 0, 0, 0);
 			stats->netId = peerInfo(peer)->netId;
 			stats->setValue(1, FM1_Gold, gold);

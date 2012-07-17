@@ -140,8 +140,15 @@ enum FieldMaskThree : uint32
 
 enum FieldMaskFour : uint32
 {
-	FM4_MaxHp       = 0x00000001,
-	FM4_CurrentHp   = 0x00000004,
+	FM4_CurrentHp   = 0x00000001,
+	FM4_CurrentMana = 0x00000002,
+	FM4_MaxHp       = 0x00000004,
+	FM4_MaxMp       = 0x00000008,
+	FM4_exp         = 0x00000010,
+	FM4_Vision1     = 0x00000100,
+	FM4_Vision2     = 0x00000200,
+	FM4_Speed       = 0x00000400,
+	FM4_ModelSize   = 0x00000800,
 };
 
 enum FieldMaskFive : uint32

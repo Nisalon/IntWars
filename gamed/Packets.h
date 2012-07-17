@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <enet/enet.h>
 #include "common.h"
 #include <time.h>
+#include <intlib/general.h>
 
 #if defined( __GNUC__ )
 #pragma pack(1)
@@ -345,6 +346,7 @@ struct MovementAns
 		memset(packet, 0, size(vectorNo));
 		packet->delta = (hasDelta) ? 0 : 1;
 		packet->header.cmd = PKT_S2C_MoveAns;
+		packet->header.ticks = clock();
 		packet->vectorNo = vectorNo;
 		return packet;
 	}
@@ -443,6 +445,19 @@ struct CharacterStats
 		return size;
 	}
 
+	static CharacterStats *create(uint32 blockNo, uint32 mask)
+	{
+		switch(blockNo)
+		{
+			case 1: return create(mask, 0, 0, 0, 0);
+			case 2: return create(0, mask, 0, 0, 0);
+			case 3: return create(0, 0, mask, 0, 0);
+			case 4: return create(0, 0, 0, mask, 0);
+			case 5: return create(0, 0, 0, 0, mask);
+			default: return NULL;
+		}
+	}
+
 	static CharacterStats *create(uint32 one, uint32 two, uint32 three, uint32 four, uint32 five)
 	{
 		//Calculate the total size needed
@@ -500,14 +515,19 @@ struct CharacterStats
 
 		//Get the offset for the block number
 		uint32 x = 0;
-		for(int i = 0; i < blockNo; i++)
-			x += countBits(offset[x], false);
+		uint32 blocks = countBits(masterMask, false);
+		if(blocks > 1)
+			for(int i = 0; i < blockNo; i++)
+					x += countBits(offset[x], false);
 
 		//Get the offset for the field
-		for(uint32 i = 0, mask = 1; i < 32; i++)
+		for(uint32 i = 0,  a = 0, mask = 1; i < 32; i++)
 		{
 			if(mask & field)
-				offset[x+i+1] = htonl(value);
+			{
+				memcpy(&offset[x+a+1], &value, 4);
+				a++;
+			}
 			mask <<= 1;
 		}
 

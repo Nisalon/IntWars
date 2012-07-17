@@ -17,12 +17,18 @@
     <ClCompile Include="..\..\dep\src\intlib\blowfish.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dep\src\intlib\general.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dep\include\intlib\base64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dep\include\intlib\blowfish.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dep\include\intlib\general.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
