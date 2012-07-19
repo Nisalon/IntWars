@@ -598,6 +598,14 @@ struct HeroSpawn
 	uint8 type[40];
 } ;
 
+struct Announce
+{
+	PacketHeader header;
+	uint8 msg;
+	uint64 unknown;
+	uint32 mapNo;
+};
+
 typedef struct _SkillUpPacket
 {
 	PacketHeader header;
